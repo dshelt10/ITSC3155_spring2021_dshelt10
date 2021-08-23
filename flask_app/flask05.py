@@ -71,16 +71,32 @@ def new_note():
         a_user = db.session.query(User).filter_by(email='dshelt10@uncc.edu').one()
         return render_template('new.html', user=a_user)
 
-@app.route('/notes/edit/<note_id>')
+@app.route('/notes/edit/<note_id>', methods=['GET', 'POST'])
 def update_note(note_id):
+    #Check method for used request
+    if request.method == 'POST':
+
+        title = request.form['title']
+
+        text = request.form['noteText']
+        note = db.session.query(Note).filter_by(id=note_id).one()
+
+        note.title = title
+        note.text = text
+
+        db.session.add(note)
+        db.session.commit()
+
+        return redirect(url_for('get_notes'))
+    else:
     # GET request - show new note form to edit note
-    #retrieve user from database
-    a_user = db.session.query(User).filter_by(email='dshelt10@uncc.edu').one()
+        #retrieve user from database
+        a_user = db.session.query(User).filter_by(email='dshelt10@uncc.edu').one()
 
-    #retrieve note from database
-    my_note = db.session.query(Note).filter_by(id=note_id).one()
+        #retrieve note from database
+        my_note = db.session.query(Note).filter_by(id=note_id).one()
 
-    return render_template('new.html', note=my_note, user=a_user)
+        return render_template('new.html', note=my_note, user=a_user)
 
     
 app.run(host=os.getenv('IP', '127.0.0.1'),port=int(os.getenv('PORT', 5000)),debug=True)
