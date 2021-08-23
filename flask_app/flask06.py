@@ -80,7 +80,9 @@ def new_note():
 
             today = today.strftime("%m-%d-%Y")
 
-            new_record = Note(title, text, today, session['user_id'])
+            privacy = request.form['privacy']
+
+            new_record = Note(title, text, today, session['user_id'], privacy)
             db.session.add(new_record)
             db.session.commit()
 
@@ -101,9 +103,12 @@ def update_note(note_id):
 
             text = request.form['noteText']
             note = db.session.query(Note).filter_by(id=note_id).one()
+            privacy = request.form['privacy']
+
 
             note.title = title
             note.text = text
+            note.privacy = privacy
 
             db.session.add(note)
             db.session.commit()
@@ -203,6 +208,26 @@ def new_comment(note_id):
 
     else:
         return redirect(url_for('login'))
+
+@app.route('/public')
+def public():
+    # # retrieve user from database
+    # check if a user is saved in session
+    #         #retrieve notes from database
+        my_notes = db.session.query(Note).filter_by(privacy='public')
+
+
+        return render_template('public.html', notes=my_notes)
+
+
+@app.route('/public/<note_id>')
+def public_note(note_id):
+
+     form = CommentForm()
+
+     my_note = db.session.query(Note).filter_by(id=note_id, privacy="public").one()
+
+     return render_template('note.html', note=my_note, user=session['user'], form=form)
 
 app.config['SECRET_KEY'] = 'SE3155'
 
